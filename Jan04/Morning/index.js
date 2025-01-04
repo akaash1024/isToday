@@ -2,7 +2,6 @@ const express = require("express");
 const { PORT } = require("./env");
 const path = require("path");
 const { truncate } = require("fs");
-const fs = require("fs").promises;
 
 const app = express();
 
@@ -14,9 +13,11 @@ app.get("/", (req, res) => {
   res.sendFile(homepagePath);
 });
 
-// ! Operation 
+// ! Operation
 
 /*
+const fs = require("fs").promises;
+
 const fileName = "practice.txt";
 const filePath = path.join(__dirname, fileName);
 
@@ -82,13 +83,66 @@ const deleteFile = async ( ) => {
 
 */
 
+/*
+const fileName = "sync.txt"
+const filePath = path.join(__dirname, fileName)
 // ? writeFile
 
-// ? readFile
-// ? updateFile
-// ? renameFile
-// ? deleteFile
+const fs = require('fs');
+const { log } = require("console");
+fs.writeFileSync(filePath, "This is initial data", "utf-8")
+console.log(`File created`);
 
+// ? readFile
+const data = fs.readFileSync(filePath, "utf-8")
+console.log(data);
+
+// ? updateFile
+fs.appendFileSync(filePath, "thisi is nskdfh", "utf-8")
+console.log(`updated`);
+
+// ? renameFile
+const newFileName = "new.txt"
+const newFilePath = path.join(__dirname, newFileName)
+fs.renameSync(filePath, newFilePath)
+console.log(`Renamed`);
+
+// ? deleteFile
+fs.unlinkSync(newFilePath)
+console.log(`Deleted`);
+
+
+*/
+
+const fs = require("fs");
+const fileName = "callback.txt";
+const filePath = path.join(__dirname, fileName);
+
+// ? writeFile
+fs.writeFile(filePath, "thisi sdata", (err, res) => {
+  if (err) {
+    console.log(err);
+  }
+  console.log(`File saved`);
+});
+
+// ? ReadFile
+
+fs.readFile(fileName, "utf-8", (err, res) => {
+  if (err) {
+    console.log(err);
+  }
+  console.log(res);
+});
+// ? UpdateFile
+fs.appendFile(filePath, "\nthis is update", "utf-8", (err, res)=>{
+    if (err) {
+        console.log(err);
+      }
+      console.log("updated");
+})
+// ? RenameFile
+// ? DeleteFile
 
 app.listen(PORT, () => {
   console.log(`Server is listening at http://localhost:${PORT}/`);
