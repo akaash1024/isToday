@@ -1,72 +1,98 @@
-const express = require("express");
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-const helmet = require("helmet");
+// server.js
+const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
+// Create our web server
 const app = express();
 const PORT = 3000;
 
-// Ensure uploads directory exists
-if (!fs.existsSync("./uploads")) {
-  fs.mkdirSync("./uploads");
+// Make sure we have a folder to store uploaded files
+if (!fs.existsSync('./uploads')) {
+  fs.mkdirSync('./uploads');
 }
 
-// Middleware
-app.use(helmet());
-app.use(express.static(__dirname));
-
-// Multer configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "./uploads"),
-  filename: (req, file, cb) =>
-    cb(
-      null,
-      file.originalname.split(".")[0] +
-        "-" +
-        Date.now() +
-        path.extname(file.originalname)
-    ),
+// How we want to save uploaded files
+const fileStorage = multer.diskStorage({
+  // Where to save the files
+  destination: (req, file, saveFile) => {
+    saveFile(null, './uploads');
+  },
+  
+  // What to name the files
+  filename: (req, file, saveFile) => {
+    saveFile(
+      null, 
+      file.originalname.split('.')[0] + 
+      '-' + 
+      Date.now() + 
+      path.extname(file.originalname)
+    );
+  }
 });
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 1024 * 1024 * 2 },
-  fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|gif/;
-    const extname = filetypes.test(
+// Rules for file uploads
+const uploadRules = multer({
+  storage: fileStorage,
+  
+  // Maximum file size (2MB)
+  limits: { 
+    fileSize: 1024 * 1024 * 2 
+  },
+  
+  // Only allow image files
+  fileFilter: (req, file, checkFile) => {
+    // List of allowed file types
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    
+    // Check file extension
+    const isValidExtension = allowedTypes.test(
       path.extname(file.originalname).toLowerCase()
     );
-    const mimetype = filetypes.test(file.mimetype);
+    
+    // Check file MIME type
+    const isValidMimeType = allowedTypes.test(file.mimetype);
 
-    if (extname && mimetype) {
-      cb(null, true);
+    // Only allow file if both extension and type are valid
+    if (isValidExtension && isValidMimeType) {
+      checkFile(null, true);
     } else {
-      cb(new Error("Error: Images only!"));
+      checkFile(new Error('Only image files are allowed!'));
     }
-  },
+  }
 });
 
-// Routes
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+// Show the upload page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.post("/upload", upload.array("files", 4), (req, res) => {
+// Handle file uploads
+app.post('/upload', uploadRules.array('files', 4), (req, res) => {
+  // Check if any files were uploaded
   if (!req.files || req.files.length === 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "No files uploaded." });
+    return res.status(400).json({
+      success: false, 
+      message: 'No files uploaded'
+    });
   }
 
-  const fileDetails = req.files.map((file) => ({
+  // Get details of uploaded files
+  const uploadedFiles = req.files.map(file => ({
     originalName: file.originalname,
-    savedAs: file.filename,
-    size: file.size,
+    savedName: file.filename,
+    size: file.size
   }));
 
-  res.status(200).json({ success: true, files: fileDetails });
+  // Send back successful response
+  res.status(200).json({
+    success: true, 
+    files: uploadedFiles
+  });
 });
 
-// Server
-app.listen(PORT, () => console.log(`Server is running at port ${PORT}`));
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
