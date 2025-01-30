@@ -14,20 +14,13 @@ router
     validate(data_ValidationSchema),
     todoRoutes.addTodo
   );
+
+// ! need to cusomize schema for updare and delete validation
 router
   .route("/update/:id")
-  .patch(
-    isUserAuthenticated,
-    validate(data_ValidationSchema),
-    isUserAuthorized,
-    todoRoutes.updateTodo
-  );
+  .patch(isUserAuthenticated, isUserAuthorized, todoRoutes.updateTodo);
 router
   .route("/delete/:id")
-  .delete(
-    isUserAuthenticated,
-    isUserAuthorized,
-    todoRoutes.deleteTodo
-  );
+  .delete(isUserAuthenticated, isUserAuthorized, todoRoutes.deleteTodo);
 
 module.exports = router;
