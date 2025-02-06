@@ -10,9 +10,20 @@ const adminRoute = require("./router/admin.router");
 const connectDatabase = require("./database/db");
 const { ApiError } = require("./utils/ApiError");
 
+const path = require("path");
+
 //! cors part
 app.use(cors());
 app.use(express.json());
+
+// ! static file for checking is server working properly or what
+const staticFilePath = path.join(__dirname, "public");
+app.use(express.static(staticFilePath));
+
+app.get("/", (req, res) => {
+  const homePath = path.join(__dirname, "public", "index.html");
+  res.sendFile(homePath);
+});
 
 // ! routes
 app.use("/api/auth", authRoute);
