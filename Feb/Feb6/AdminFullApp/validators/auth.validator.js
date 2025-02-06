@@ -1,6 +1,6 @@
 const { z } = require("zod");
 
-const registerSchema = z.object({
+const loginSchema = z.object({
   email: z
     .string({ required_error: "Email is required" })
     .trim()
@@ -12,7 +12,9 @@ const registerSchema = z.object({
     .string({ required_error: "Password is required" })
     .min(4, { message: "Password must be at least 7 characters." })
     .max(1024, { message: "Password must not exceed 1024 characters." }),
+});
 
+const registerSchema = loginSchema.extend({
   username: z
     .string({ required_error: "Username is required" })
     .trim()
@@ -26,4 +28,4 @@ const registerSchema = z.object({
     .max(20, { message: "Phone Number must not exceed 20 characters." }),
 });
 
-module.exports = registerSchema;
+module.exports = { registerSchema, loginSchema };

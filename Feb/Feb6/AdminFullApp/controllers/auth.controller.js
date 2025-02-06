@@ -45,9 +45,16 @@ const register = async (req, res) => {
     email,
     phone,
   });
-  console.log(newUser)
-  
-  res.send(new ApiResponse(201, newUser, "Successfully Created"))
+
+  const newUserDetails = {
+    token: await newUser.generateToken(),
+    userId: newUser._id.toString(),
+  };
+  res
+    .status(201)
+    .send(
+      new ApiResponse(201, { newUserDetails, newUser }, "Successfully Created")
+    );
 
   try {
   } catch (error) {
@@ -55,9 +62,47 @@ const register = async (req, res) => {
   }
 };
 
-const login = (req, res) => {
-  //
+const login = async (req, res, next) => {
+  console.log(req.body);
+
+  try {
+    const { email, password } = req.body;
+    const isUserExit = await User_Database.findOne({ email });
+    console.log(isUserExit);
+
+    if (!isUserExit) {
+      return res.status(400).json({ message: "Invalid Credentials " });
+    }
+
+    const user = await isUserExit.comparePassword(password);
+
+    if (user) {
+      const userDetails = {
+        token: await isUserExit.generateToken(),
+        userId: isUserExit._id.toString(),
+      };
+      res
+        .status(200)
+        .send(new ApiResponse(200, { userDetails }, "Login Successfull. .."));
+    } else {
+      res.status(401).json({ message: "Invalid email or password" });
+    }
+  } catch (error) {
+    next(error);
+  }
 };
 
+// const user = async (req, res, next) => {
+//   console.log(req.user);
+  
+//   try {
+//     const userData = req.user;
+//     console.log(userData);
+//     return res.status(200).json({ userData });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 // ! exporting
-module.exports = { home, register, login };
+module.exports = { home, register, login, };
