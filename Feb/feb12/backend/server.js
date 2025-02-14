@@ -3,8 +3,10 @@ const path = require("path")
 
 const express = require("express")
 const connectDB = require("./database/db")
+
+const upload = require("./middlewares/multer.middleware")
 const app = express()
-const aiRoute = require("./routes/ai.route")
+const registerUser = require("./controller/user.controller")
 
 // ! middlewares
 app.use(express.json())
@@ -18,7 +20,15 @@ app.get("/", (req, res) => {
 });
 
 
-app.use("/ai", aiRoute)
+
+
+// ! testing multer
+
+app.post("/api/user/register", upload.single("avatar"), registerUser);
+
+
+
+
 
 
 app.use((req, res) => {
